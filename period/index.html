@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>月经出血量估算器</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 0; max-width: 100%; margin: 0; }
+    
+    /* 顶部导航栏样式 */
+    .top-nav {
+      width: 100%;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .logo-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #eee;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-img {
+      height: 40px;
+      width: auto;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: bold;
+      color: #e91e63;
+    }
+
+    .language-select {
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      background-color: #fff;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .nav-links a {
+      color: #333;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+
+    .nav-links a:hover {
+      background-color: #f0f0f0;
+      color: #e91e63;
+    }
+
+    /* 下拉菜单样式 */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: #fff;
+      min-width: 160px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      border-radius: 4px;
+      z-index: 1100;
+    }
+
+    .dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f0f0f0;
+      color: #e91e63;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+      .logo-bar {
+        padding: 10px;
+      }
+
+      .logo-img {
+        height: 30px;
+      }
+
+      .logo-text {
+        font-size: 18px;
+      }
+
+      .nav-links {
+        padding: 5px;
+        gap: 10px;
+        font-size: 14px;
+      }
+      
+      .dropdown-content {
+        min-width: 140px;
+      }
+    }
+
+    /* 原有样式继续保持 */
+    .step { 
+      display: none; 
+      padding: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .active { display: block; }
+    .card-table { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 10px; }
+    .card-column { display: flex; flex-direction: column; align-items: center; }
+    .card-label { margin-bottom: 5px; text-align: center; }
+    .card-grid { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+    .card {
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      background-color: #f8f8f8;
+      transition: transform 0.2s;
+      width: 100px;
+      position: relative;
+      padding-right: 25px;
+      word-break: break-word;
+      hyphens: auto;
+    }
+    .card:hover { 
+      transform: scale(1.05); 
+      border-color: #007bff;
+      background-color: #fff5f5;
+    }
+    .card .delete-icon {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      cursor: pointer;
+      opacity: 0.7;
+      padding: 2px;
+    }
+    .card .delete-icon:hover {
+      opacity: 1;
+    }
+    .used-cards, .cup-entries, .clot-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px dashed #ccc;
+      border-radius: 10px;
+      min-height: 60px;
+    }
+    .used-card, .clot-card, .cup-entry {
+      padding: 5px 10px;
+      background-color: #ffe;
+      border-radius: 6px;
+      border: 1px solid #999;
+      font-size: 14px;
+      cursor: pointer;
+      position: relative;
+      padding-right: 25px;
+    }
+    
+    .used-card:hover, .clot-card:hover, .cup-entry:hover {
+      background-color: #fff5f5;
+    }
+    
+    .used-card .delete-icon, .clot-card .delete-icon, .cup-entry .delete-icon {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      cursor: pointer;
+      opacity: 0.7;
+      padding: 2px;
+    }
+
+    .used-card .delete-icon:hover, .clot-card .delete-icon:hover, .cup-entry .delete-icon:hover {
+      opacity: 1;
+    }
+    
+    button { margin-top: 20px; padding: 8px 16px; }
+    label { display: block; margin-top: 10px; }
+    input[type="number"] { width: 60px; }
+    select { margin-bottom: 5px; }
+    
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      width: 100%;
+    }
+    
+    .prev-button {
+      flex: 1;
+      padding: 8px 16px;
+    }
+    
+    .next-button {
+      flex: 3;
+      padding: 8px 16px;
+    }
+    
+    .save-temp-button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .save-temp-button:hover {
+      background-color: #45a049;
+    }
+    
+    .save-temp-button:active {
+      background-color: #3d8b40;
+    }
+    
+    .chart-container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 20px auto;
+      display: flex;
+      gap: 20px;
+    }
+    .chart-wrapper {
+      flex: 1;
+      min-width: 0;
+    }
+    .chart-wrapper.pie-chart {
+      flex: 0 0 300px;
+    }
+    
+    /* 文本框样式 */
+    .message-box {
+      margin: 20px auto;
+      padding: 15px 20px;
+      background-color: #fff5f5;
+      border: 1px solid #ffcdd2;
+      border-radius: 8px;
+      text-align: center;
+      color: #d32f2f;
+      font-size: 14px;
+      line-height: 1.4;
+      max-width: 400px;
+    }
+
+    .probability-box {
+      margin: 15px auto;
+      padding: 12px 20px;
+      background-color: #f3e5f5;
+      border: 1px solid #ce93d8;
+      border-radius: 8px;
+      text-align: center;
+      color: #6a1b9a;
+      font-size: 15px;
+      line-height: 1.4;
+      max-width: 400px;
+    }
+
+    .suggestion-box {
+      margin: 15px auto;
+      padding: 12px 20px;
+      background-color: #e8f5e9;
+      border: 1px solid #a5d6a7;
+      border-radius: 8px;
+      text-align: center;
+      color: #2e7d32;
+      font-size: 15px;
+      line-height: 1.4;
+      max-width: 400px;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 10px 0;
+        max-width: 100%;
+        font-size: 14px;
+      }
+      
+      .step {
+        padding: 0 10px;
+      }
+      
+      h2 {
+        font-size: 1.5em;
+        margin: 10px 0;
+        padding: 0 10px;
+      }
+      
+      .chart-container {
+        margin: 10px 0;
+        padding: 0;
+        gap: 15px;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .chart-wrapper {
+        width: 100%;
+        padding: 0 10px;
+        box-sizing: border-box;
+      }
+      
+      .chart-wrapper.bar-chart {
+        min-height: 250px;
+      }
+      
+      .chart-wrapper.pie-chart {
+        width: 75%;
+        min-height: 250px;
+      }
+      
+      table {
+        margin: 0 10px;
+        width: calc(100% - 20px);
+        font-size: 12px;
+      }
+      
+      td, th {
+        padding: 4px;
+      }
+      
+      .card-table {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 0 10px;
+      }
+      
+      .card {
+        width: auto;
+        min-height: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-size: 12px;
+        line-height: 1.2;
+        padding: 5px 25px 5px 5px;
+      }
+      
+      .card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0px;
+      }
+      
+      .card .delete-icon {
+        top: 50%;
+        right: 5px;
+        transform: translateY(-50%);
+      }
+      
+      select, input[type="number"] {
+        font-size: 16px; /* 防止iOS自动放大 */
+        padding: 8px;
+      }
+      
+      button {
+        font-size: 16px;
+        padding: 10px 20px;
+        width: 100%;
+        margin: 10px 0;
+      }
+      
+      .message-box, .probability-box, .suggestion-box {
+        margin: 15px 10px;
+        padding: 12px 15px;
+        font-size: 13px;
+      }
+    }
+
+    /* 血块卡片容器样式 */
+    .clot-container {
+      margin-top: 20px;
+    }
+    
+    .clot-container h3 {
+      margin-bottom: 10px;
+    }
+    
+    .clot-card-table {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 10px;
+      padding: 0 10px;
+    }
+
+    @media (max-width: 768px) {
+      .clot-card-table .card {
+        min-height: 35px;
+        padding: 5px 25px 5px 5px;
+      }
+    }
+
+    .date-display {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .save-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px auto;
+      padding: 0 10px;
+    }
+    
+    .save-button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    .save-image {
+      background-color: #e3f2fd;
+      color: #1565c0;
+    }
+    
+    .save-pdf {
+      background-color: #fce4ec;
+      color: #c2185b;
+    }
+    
+    .save-button:hover {
+      opacity: 0.9;
+    }
+    
+    /* 涂抹模式相关样式 */
+    .paint-mode-btn {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .pad-type-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .pad-add-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 8px 16px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .pad-add-btn:hover {
+      background-color: #1976D2;
+    }
+    
+    .pad-canvas-container {
+      position: relative;
+      width: 200px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      overflow: hidden;
+      padding-bottom: 40px;
+    }
+    
+    .pad-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 8px;
+      background: #f5f5f5;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+    }
+    
+    .pad-info select {
+      flex: 1;
+      min-width: 60px;
+      padding: 4px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    
+    .pad-info span {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .saved-volume {
+      width: 100%;
+      text-align: center;
+      color: #e91e63 !important;
+      font-weight: bold;
+      padding-top: 5px;
+      border-top: 1px dashed #ccc;
+    }
+    
+    .paint-controls {
+      margin: 15px 0;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .paint-color-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .pads-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .pad-canvas {
+      display: block;
+      background: #fff;
+    }
+    
+    .pad-canvas-container .delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      z-index: 1;
+    }
+    
+    .pad-canvas-container .save-btn {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: rgba(76, 175, 80, 0.8);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      z-index: 1;
+    }
+    
+    @media (max-width: 768px) {
+      .paint-controls {
+        padding: 10px;
+      }
+      
+      .pad-canvas-container {
+        width: 150px;
+      }
+      
+      .paint-color-controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .paint-color-controls input[type="range"] {
+        width: 100%;
+      }
+    }
+
+    /* QR Code Popup Styles */
+    .nav-link-container {
+      position: relative; /* Needed for absolute positioning of the popup */
+      display: inline-block; /* Keep links inline but allow relative positioning */
+    }
+
+    .qr-popup {
+      display: none; /* Hidden by default */
+      position: absolute;
+      top: 100%; /* Position below the link */
+      left: 50%;
+      transform: translateX(-50%); /* Center horizontally */
+      margin-top: 5px; /* Space between link and popup */
+      background-color: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      text-align: center;
+      z-index: 1100; /* Ensure it's above other content */
+      white-space: nowrap; /* Prevent wrapping */
+    }
+
+    .qr-popup img {
+      display: block;
+      max-width: 100px; /* Adjust size as needed */
+      height: auto;
+      margin-bottom: 5px;
+    }
+
+    .qr-popup span {
+      font-size: 12px;
+      color: #555;
+    }
+
+    /* Show popup on hover */
+    .nav-link-container:hover .qr-popup {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="top-nav">
+    <div class="logo-bar">
+              <div class="logo-container">
+          <img src="logo.png" alt="血友姐妹会" class="logo-img">
+          <a href="../home/" style="text-decoration: none;"><span class="logo-text">血友姐妹会</span></a>
+        </div>
+      <select class="language-select" onchange="changeLanguage(this.value)">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+          <div class="nav-links">
+        <a href="../home/">主页</a>
+        <div class="dropdown">
+          <a href="#">科普</a>
+          <div class="dropdown-content">
+            <a href="../education/">科普图文</a>
+            <a href="../video/">视频播放</a>
+            <a href="../file/">资料下载</a>
+          </div>
+        </div>
+        <a href="../map/">检测地图</a>
+        <div class="nav-link-container">
+          <a href="https://lxi.me/3Xr9Bq">问卷跳转</a>
+          <div class="qr-popup">
+            <img src="qrcode.png" alt="问卷二维码">
+            <span>可扫码</span>
+          </div>
+        </div>
+        <a href="index.html">月经估算</a>
+        <a href="../news/">新闻</a>
+        <a href="../contact/">联系方式</a>
+      </div>
+  </nav>
+
+  <!-- 添加语言切换功能的脚本 -->
+  <script>
+    function changeLanguage(lang) {
+      // 这里可以添加语言切换的具体实现
+      console.log('Language changed to:', lang);
+      // TODO: 实现具体的语言切换逻辑
+    }
+  </script>
+
+  <!-- 第一步：选择月经天数和用品 -->
+  <div id="step1" class="step active">
+    <h2>选择月经用品和天数</h2>
+    <label>请选择月经天数：
+      <select id="periodDays">
+        <option value="1">1 天</option><option value="2">2 天</option><option value="3">3 天</option>
+        <option value="4">4 天</option><option value="5" selected>5 天</option><option value="6">6 天</option>
+        <option value="7">7 天</option><option value="8">8 天</option><option value="9">9 天</option><option value="10">10 天</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="usePad" checked> 使用卫生巾</label>
+    <label><input type="checkbox" id="useTampon"> 使用棉条</label>
+    <label><input type="checkbox" id="useCup"> 使用月经杯</label>
+    <button onclick="startTracking()">开始记录</button>
+    <div class="message-box">开发者微信：WGH38417。开发者小红书：@关爱女性血友病。本工具目前为开源项目，免费提供使用，禁止用于盈利或商业用途。工具基于 PBAC（Pictorial Blood loss Assessment Tool）设计，所提供的估算结果仅供参考，不构成医疗建议，如有任何健康疑问，请咨询专业医生。该工具为静态网页，不会上传或存储用户数据。"暂存"功能未使用 Cookies，而是通过浏览器的 Local Storage 实现。</div>
+  </div>
+
+  <!-- 第二步：记录每一天的用品使用 -->
+  <div id="tracker" class="step">
+    <h2>第 <span id="currentDay">1</span> 天</h2>
+    <div id="productSection"></div>
+    <div class="button-container">
+      <button class="prev-button" onclick="prevDay()" id="prevDayBtn" disabled>上一天</button>
+      <button class="next-button" onclick="nextDay()">下一天</button>
+    </div>
+    <button class="save-temp-button" onclick="saveTemp()">暂存数据</button>
+  </div>
+
+  <!-- 第三步：展示统计结果 -->
+  <div id="result" class="step">
+    <div class="date-display"></div>
+    <h2>出血量统计结果</h2>
+    <p>总估计出血量：<span id="totalVolume"></span> ml</p>
+    <div class="probability-box">您月经出血的概率是 <span id="probability"></span>%</div>
+    <div class="suggestion-box"><span id="suggestion"></span></div>
+    <div class="message-box">谢谢您的使用。估算结果仅供参考，不构成医疗建议，如有任何健康疑问，请咨询专业医生。</div>
+    <div class="chart-container">
+      <div class="chart-wrapper bar-chart">
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="chart-wrapper pie-chart">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+    <table border="1" cellpadding="5">
+      <thead>
+        <tr>
+          <th>天数</th>
+          <th>用品数量</th>
+          <th>估计出血量 (ml)</th>
+          <th>详情</th>
+        </tr>
+      </thead>
+      <tbody id="resultTable"></tbody>
+    </table>
+    <div class="save-buttons">
+      <button class="save-button save-image" onclick="saveAsImage()">保存报告为图片</button>
+      <button class="save-button save-pdf" onclick="saveAsPDF()">保存报告为PDF</button>
+    </div>
+  </div>
+
+  <script>
+    // 注册Chart.js数据标签插件
+    Chart.register(ChartDataLabels);
+
+    // 各类用品数据定义
+    const padTypes = ['日用', '夜用', '安心裤', '护垫'];
+    const tamponTypes = ['迷你', '常规', '大号', '加大'];
+    const saturationLevels = ['染了一点', '染了一半', '全染红'];
+    const padVolumes = {
+      '日用': {
+        '短': { '染了一点': 0.5, '染了一半': 1.0, '全染红': 2.0, 'maxCapacity': 2.0 },
+        '中': { '染了一点': 1, '染了一半': 2.0, '全染红': 4.0, 'maxCapacity': 4.0 },
+        '长': { '染了一点': 1.5, '染了一半': 3.0, '全染红': 6.0, 'maxCapacity': 6.0 }
+      },
+      '夜用': {
+        '短': { '染了一点': 1.0, '染了一半': 2.0, '全染红': 4.0, 'maxCapacity': 4.0 },
+        '中': { '染了一点': 2.0, '染了一半': 4.0, '全染红': 8.0, 'maxCapacity': 8.0 },
+        '长': { '染了一点': 3.0, '染了一半': 6.0, '全染红': 12.0, 'maxCapacity': 12.0 }
+      },
+      '安心裤': {
+        '短': { '染了一点': 1.5, '染了一半': 3.0, '全染红': 6.0, 'maxCapacity': 6.0 },
+        '中': { '染了一点': 3.0, '染了一半': 6.0, '全染红': 12.0, 'maxCapacity': 12.0 },
+        '长': { '染了一点': 4.5, '染了一半': 9.0, '全染红': 18.0, 'maxCapacity': 18.0 }
+      },
+      '护垫': {
+        '短': { '染了一点': 0.2, '染了一半': 0.4, '全染红': 0.8, 'maxCapacity': 0.8 },
+        '中': { '染了一点': 0.5, '染了一半': 1.0, '全染红': 2.0, 'maxCapacity': 2.0 },
+        '长': { '染了一点': 0.8, '染了一半': 1.5, '全染红': 3.0, 'maxCapacity': 3.0 }
+      }
+    };
+
+    const tamponVolumes = {
+      '迷你': {
+        '低': { '染了一点': 0.5, '染了一半': 1.0, '全染红': 2.0 },
+        '中': { '染了一点': 1.0, '染了一半': 2.0, '全染红': 4.0 },
+        '高': { '染了一点': 1.5, '染了一半': 3.0, '全染红': 6.0 }
+      },
+      '常规': {
+        '低': { '染了一点': 1.0, '染了一半': 2.0, '全染红': 4.0 },
+        '中': { '染了一点': 2.0, '染了一半': 4.0, '全染红': 8.0 },
+        '高': { '染了一点': 3.0, '染了一半': 6.0, '全染红': 12.0 }
+      },
+      '大号': {
+        '低': { '染了一点': 1.5, '染了一半': 3.0, '全染红': 6.0 },
+        '中': { '染了一点': 3.0, '染了一半': 6.0, '全染红': 12.0 },
+        '高': { '染了一点': 4.5, '染了一半': 9.0, '全染红': 18.0 }
+      },
+      '加大': {
+        '低': { '染了一点': 2.0, '染了一半': 4.0, '全染红': 8.0 },
+        '中': { '染了一点': 4.0, '染了一半': 8.0, '全染红': 16.0 },
+        '高': { '染了一点': 6.0, '染了一半': 12.0, '全染红': 24.0 }
+      }
+    };
+
+    const clotOptions = [
+      { label: "小血块", volume: 2 },
+      { label: "中血块", volume: 5 },
+      { label: "大血块", volume: 10 }
+    ];
+
+    // 状态变量
+    let currentDay = 1;
+    let totalDays = 5;
+    let data = [];
+
+    // 页面加载时检查是否有暂存数据
+    window.onload = function() {
+      const savedData = localStorage.getItem('menstrualData');
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (confirm('检测到暂存的数据，是否要恢复？')) {
+          data = parsed.data;
+          currentDay = parsed.currentDay;
+          totalDays = parsed.totalDays;
+          
+          // 恢复复选框状态
+          document.getElementById('usePad').checked = parsed.usePad;
+          document.getElementById('useTampon').checked = parsed.useTampon;
+          document.getElementById('useCup').checked = parsed.useCup;
+          
+          // 如果在第一步，直接跳转到追踪界面
+          if (document.getElementById('step1').classList.contains('active')) {
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('tracker').classList.add('active');
+          }
+          
+          // 更新界面
+          showDay();
+          // 更新所有类型的已使用卡片显示
+          updateUsed('pad');
+          updateUsed('tampon');
+          updateUsed('clot');
+          // 更新月经杯数据显示
+          if (parsed.useCup && data[currentDay - 1].cups && data[currentDay - 1].cups.length > 0) {
+            const container = document.getElementById('cupEntries');
+            if (container) {
+              container.innerHTML = '';
+              data[currentDay - 1].cups.forEach(cup => {
+                const div = document.createElement('div');
+                div.className = 'cup-entry';
+                div.innerHTML = `
+                  <div style="text-align: center">
+                    <button onclick="adjustCupVolume(this, 5)" style="margin: 2px; padding: 2px 8px">+5mL</button>
+                    <button onclick="adjustCupVolume(this, 1)" style="margin: 2px; padding: 2px 8px">+1mL</button>
+                  </div>
+                  <input type="number" value="${cup.volume}" min="0" placeholder="ml" style="margin: 5px 0">
+                  <div style="text-align: center">
+                    <button onclick="adjustCupVolume(this, -1)" style="margin: 2px; padding: 2px 8px">-1mL</button>
+                    <button onclick="adjustCupVolume(this, -5)" style="margin: 2px; padding: 2px 8px">-5mL</button>
+                  </div>
+                `;
+                container.appendChild(div);
+              });
+            }
+          }
+          // 更新上一天按钮状态
+          document.getElementById('prevDayBtn').disabled = currentDay === 1;
+        } else {
+          // 如果用户选择不恢复，则清除暂存数据
+          localStorage.removeItem('menstrualData');
+        }
+      }
+    };
+
+    // 暂存数据功能
+    function saveTemp() {
+      const saveData = {
+        data: data,
+        currentDay: currentDay,
+        totalDays: totalDays,
+        usePad: document.getElementById('usePad').checked,
+        useTampon: document.getElementById('useTampon').checked,
+        useCup: document.getElementById('useCup').checked,
+        timestamp: new Date().toLocaleString()
+      };
+      
+      localStorage.setItem('menstrualData', JSON.stringify(saveData));
+      
+      // 显示保存成功提示
+      const tempMsg = document.createElement('div');
+      tempMsg.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(76, 175, 80, 0.9);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 5px;
+        z-index: 1000;
+      `;
+      tempMsg.textContent = '数据暂存成功！';
+      document.body.appendChild(tempMsg);
+      
+      // 2秒后移除提示
+      setTimeout(() => {
+        tempMsg.remove();
+      }, 2000);
+    }
+
+    // 初始化记录
+    function startTracking() {
+      totalDays = parseInt(document.getElementById('periodDays').value);
+      data = Array.from({ length: totalDays }, () => ({ pads: [], tampons: [], cups: [], clots: [] }));
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('tracker').classList.add('active');
+      currentDay = 1;
+      showDay();
+    }
+
+    // 渲染当天记录界面
+    function showDay() {
+      document.getElementById('currentDay').innerText = currentDay;
+      // 更新上一天按钮状态
+      document.getElementById('prevDayBtn').disabled = currentDay === 1;
+      const section = document.getElementById('productSection');
+      section.innerHTML = '';
+
+      if (document.getElementById('usePad').checked) {
+        section.innerHTML += `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>卫生巾</h3>
+            <button id="togglePaintMode" onclick="togglePaintMode()" class="paint-mode-btn">切换涂抹模式</button>
+          </div>
+          <div id="padCardsSection">
+            <div class="card-table">` +
+          padTypes.map(type => `
+            <div class="card-column">
+              <label class="card-label">${type} 长度
+                <select id="padLength_${type}" onchange="updatePadCards('${type}')">
+                  ${Object.keys(padVolumes[type]).map(len => `<option value="${len}" ${len === '中' ? 'selected' : ''}>${len}</option>`).join('')}
+                </select>
+              </label>
+              <div class="card-grid" id="padCards_${type}"></div>
+            </div>
+          `).join('') + '</div><div class="used-cards" id="padUsed"></div></div>' +
+          '<div id="paintModeSection" style="display: none;">' +
+          '<div class="paint-controls">' +
+          '<div class="pad-type-buttons">' +
+          padTypes.map(type => 
+            `<button onclick="addNewPad('${type}')" class="pad-add-btn">添加${type}</button>`
+          ).join('') +
+          '</div>' +
+          '<div class="paint-color-controls">' +
+          '<label>涂抹颜色：</label>' +
+          '<input type="color" id="paintColor" value="#ff0000">' +
+          '<label>笔刷大小：</label>' +
+          '<input type="range" id="brushSize" min="1" max="20" value="5">' +
+          '</div>' +
+          '</div>' +
+          '<div id="padsContainer" class="pads-container"></div>' +
+          '</div>';
+      }
+
+      if (document.getElementById('useTampon').checked) {
+        section.innerHTML += '<h3>棉条</h3><div class="card-table">' +
+          tamponTypes.map(type => `
+            <div class="card-column">
+              <label class="card-label">${type} 吸收能力
+                <select id="tamponAbsorbency_${type}" onchange="updateTamponCards('${type}')">
+                  ${Object.keys(tamponVolumes[type]).map(level => `<option value="${level}" ${level === '中' ? 'selected' : ''}>${level}</option>`).join('')}
+                </select>
+              </label>
+              <div class="card-grid" id="tamponCards_${type}"></div>
+            </div>
+          `).join('') + '</div><div class="used-cards" id="tamponUsed"></div>';
+      }
+
+      if (document.getElementById('useCup').checked) {
+        section.innerHTML += '<h3>月经杯</h3><button onclick="addCup()">+ 添加杯子</button>';
+        section.innerHTML += '<div class="cup-entries" id="cupEntries"></div>';
+      }
+
+      section.innerHTML += '<div class="clot-container"><h3>血块</h3><div class="clot-card-table">' + 
+        clotOptions.map(opt => `<div class="card" onclick="addClot('${opt.label}', ${opt.volume})">${opt.label} (${opt.volume}ml)<span class="delete-icon" title="添加">➕</span></div>`).join('') +
+        '</div><div class="clot-cards" id="clotUsed"></div></div>';
+
+      padTypes.forEach(type => updatePadCards(type));
+      tamponTypes.forEach(type => updateTamponCards(type));
+      updateUsed('pad');
+      updateUsed('tampon');
+      updateUsed('clot');
+    }
+
+    function updatePadCards(type) {
+      const container = document.getElementById(`padCards_${type}`);
+      const selected = document.getElementById(`padLength_${type}`).value;
+      container.innerHTML = saturationLevels.map(level => {
+        const vol = padVolumes[type][selected][level];
+        const isMobile = window.innerWidth <= 768;
+        const content = isMobile ? 
+          `<div class="card-info">
+            <div>${type}</div>
+            <div>${level}</div>
+            <div>${vol}ml</div>
+           </div>` :
+          `${type} ${level} (${vol}ml)`;
+        return `<div class="card" onclick="addPad('${type}', '${selected}', '${level}', ${vol})">${content}<span class="delete-icon" title="添加">➕</span></div>`;
+      }).join('');
+    }
+
+    function updateTamponCards(type) {
+      const container = document.getElementById(`tamponCards_${type}`);
+      const selected = document.getElementById(`tamponAbsorbency_${type}`).value;
+      container.innerHTML = saturationLevels.map(level => {
+        const vol = tamponVolumes[type][selected][level];
+        const isMobile = window.innerWidth <= 768;
+        const content = isMobile ? 
+          `<div class="card-info">
+            <div>${type}</div>
+            <div>${level}</div>
+            <div>${vol}ml</div>
+           </div>` :
+          `${type} ${level} (${vol}ml)`;
+        return `<div class="card" onclick="addTampon('${type}', '${selected}', '${level}', ${vol})">${content}<span class="delete-icon" title="添加">➕</span></div>`;
+      }).join('');
+    }
+
+    function addPad(type, length, level, volume) {
+      data[currentDay - 1].pads.push({ type, length, level, volume });
+      updateUsed('pad');
+    }
+    function addTampon(type, absorbency, level, volume) {
+      data[currentDay - 1].tampons.push({ type, absorbency, level, volume });
+      updateUsed('tampon');
+    }
+    function addClot(label, volume) {
+      data[currentDay - 1].clots.push({ label, volume });
+      updateUsed('clot');
+    }
+
+    function updateUsed(productType) {
+      const usedContainer = document.getElementById(`${productType}Used`);
+      const list = data[currentDay - 1][`${productType}s`];
+      usedContainer.innerHTML = list.map((item, i) => {
+        let label = '';
+        if (productType === 'pad') {
+          label = `${item.type} ${item.length} ${item.level} (${item.volume}ml)`;
+        } else if (productType === 'tampon') {
+          label = `${item.type} ${item.absorbency} ${item.level} (${item.volume}ml)`;
+        } else {
+          label = `${item.label} (${item.volume}ml)`;
+        }
+        return `<div class="clot-card" onclick="removeItem('${productType}', ${i})">${label}<span class="delete-icon" title="删除">❌</span></div>`;
+      }).join('');
+    }
+
+    function removeItem(type, index) {
+      data[currentDay - 1][`${type}s`].splice(index, 1);
+      updateUsed(type);
+    }
+
+    function addCup() {
+      const container = document.getElementById('cupEntries');
+      const div = document.createElement('div');
+      div.className = 'cup-entry';
+      
+      // 添加+5和+1按钮
+      const topButtonGroup = document.createElement('div');
+      topButtonGroup.style.textAlign = 'center';
+      topButtonGroup.innerHTML = `
+        <button onclick="adjustCupVolume(this, 5)" style="margin: 2px; padding: 2px 8px">+5mL</button>
+        <button onclick="adjustCupVolume(this, 1)" style="margin: 2px; padding: 2px 8px">+1mL</button>
+      `;
+      div.appendChild(topButtonGroup);
+
+      // 输入框
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.value = '0';
+      input.min = '0';
+      input.placeholder = 'ml';
+      input.style.margin = '5px 0';
+      input.addEventListener('input', updateCup);
+      div.appendChild(input);
+
+      // 添加-1和-5按钮
+      const bottomButtonGroup = document.createElement('div');
+      bottomButtonGroup.style.textAlign = 'center';
+      bottomButtonGroup.innerHTML = `
+        <button onclick="adjustCupVolume(this, -1)" style="margin: 2px; padding: 2px 8px">-1mL</button>
+        <button onclick="adjustCupVolume(this, -5)" style="margin: 2px; padding: 2px 8px">-5mL</button>
+      `;
+      div.appendChild(bottomButtonGroup);
+
+      container.appendChild(div);
+      updateCup();
+    }
+
+    function adjustCupVolume(button, delta) {
+      const cupEntry = button.closest('.cup-entry');
+      const input = cupEntry.querySelector('input');
+      const newValue = Math.max(0, parseFloat(input.value || 0) + delta);
+      input.value = newValue;
+      updateCup();
+    }
+
+    function updateCup() {
+      const inputs = document.querySelectorAll('#cupEntries input');
+      const volumes = Array.from(inputs).map(i => parseFloat(i.value) || 0);
+      data[currentDay - 1].cups = volumes.map(v => ({ label: `杯 ${v}ml`, volume: v }));
+    }
+
+    function nextDay() {
+      processVisiblePads(); // Process and clear pads before moving
+      if (currentDay < totalDays) {
+        currentDay++;
+        showDay();
+        document.getElementById('prevDayBtn').disabled = false;
+      } else {
+        showResult();
+      }
+    }
+
+    function prevDay() {
+      processVisiblePads(); // Process and clear pads before moving
+      if (currentDay > 1) {
+        currentDay--;
+        showDay();
+        document.getElementById('prevDayBtn').disabled = currentDay === 1;
+      }
+    }
+
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}年${month}月${day}日`;
+    }
+
+    async function saveAsImage() {
+      try {
+        const resultDiv = document.getElementById('result');
+        // 临时调整样式以确保完整捕获
+        const originalStyle = resultDiv.style.cssText;
+        resultDiv.style.cssText = `
+          padding: 40px;
+          background: white;
+          width: ${window.innerWidth <= 768 ? '100%' : '900px'};
+          margin: 0 auto;
+          position: relative;
+          box-sizing: border-box;
+        `;
+
+        const canvas = await html2canvas(resultDiv, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          windowWidth: window.innerWidth <= 768 ? window.innerWidth : 1000,
+          width: window.innerWidth <= 768 ? window.innerWidth : 900,
+          backgroundColor: '#ffffff'
+        });
+        
+        // 恢复原始样式
+        resultDiv.style.cssText = originalStyle;
+
+        // 创建一个新的 a 元素
+        const link = document.createElement('a');
+        // 设置下载文件名
+        const filename = `月经量报告_${formatDate(new Date()).replace(/[年月日]/g, '')}.png`;
+        
+        // 将canvas转换为blob
+        canvas.toBlob(function(blob) {
+          // 创建blob URL
+          const url = URL.createObjectURL(blob);
+          
+          // 尝试在新窗口中打开 Blob URL，浏览器通常会触发下载
+          const newWindow = window.open(url, '_blank');
+          if (!newWindow) {
+            alert('无法打开新窗口，请检查浏览器设置允许弹出窗口。');
+          }
+
+          // 在短时间后释放 URL，确保下载有时间开始
+          setTimeout(() => {
+            URL.revokeObjectURL(url);
+          }, 1000); // 增加延迟确保下载启动
+        }, 'image/png');
+      } catch (error) {
+        alert('保存图片时出错，请重试');
+        console.error('Save image error:', error);
+      }
+    }
+
+    async function saveAsPDF() {
+      try {
+        const resultDiv = document.getElementById('result');
+        // 临时调整样式以确保完整捕获
+        const originalStyle = resultDiv.style.cssText;
+        resultDiv.style.cssText = `
+          padding: ${window.innerWidth <= 768 ? '15px' : '40px'};
+          background: white;
+          width: ${window.innerWidth <= 768 ? '100%' : '900px'};
+          margin: 0 auto;
+          position: relative;
+          box-sizing: border-box;
+        `;
+
+        const canvas = await html2canvas(resultDiv, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          windowWidth: window.innerWidth <= 768 ? window.innerWidth : 1000,
+          width: window.innerWidth <= 768 ? window.innerWidth : 900,
+          backgroundColor: '#ffffff'
+        });
+        
+        // 恢复原始样式
+        resultDiv.style.cssText = originalStyle;
+
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL('image/png');
+        
+        // 计算PDF尺寸和边距
+        const pageWidth = 210; // A4宽度(mm)
+        const pageHeight = 297; // A4高度(mm)
+        const margin = window.innerWidth <= 768 ? 10 : 20; // 手机端使用更小的边距
+        
+        // 计算可用区域
+        const usableWidth = pageWidth - (2 * margin);
+        const usableHeight = pageHeight - (2 * margin);
+        
+        // 计算图片缩放后的尺寸
+        const imgRatio = canvas.height / canvas.width;
+        let imgWidth = usableWidth;
+        let imgHeight = imgWidth * imgRatio;
+        
+        // 如果高度超出可用区域，则按高度缩放
+        if (imgHeight > usableHeight) {
+          imgHeight = usableHeight;
+          imgWidth = imgHeight / imgRatio;
+        }
+        
+        // 创建PDF
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        // 计算居中位置
+        const x = (pageWidth - imgWidth) / 2;
+        const y = (pageHeight - imgHeight) / 2;
+        
+        // 添加图片
+        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+
+        // 生成blob
+        const pdfBlob = pdf.output('blob');
+        
+        // 尝试在新窗口中打开 Blob URL，浏览器通常会触发下载
+        const newWindow = window.open(URL.createObjectURL(pdfBlob), '_blank');
+        if (!newWindow) {
+          alert('无法打开新窗口，请检查浏览器设置允许弹出窗口。');
+        }
+
+        // 在短时间后释放 URL，确保下载有时间开始
+        setTimeout(() => {
+          URL.revokeObjectURL(URL.createObjectURL(pdfBlob));
+        }, 1000); // 增加延迟确保下载启动
+      } catch (error) {
+        alert('保存PDF时出错，请重试');
+        console.error('Save PDF error:', error);
+      }
+    }
+
+    // 涂抹模式相关变量和函数
+    let isPaintMode = false;
+    let currentPadId = 0;
+
+    function togglePaintMode() {
+      isPaintMode = !isPaintMode;
+      const btn = document.getElementById('togglePaintMode');
+      const cardsSection = document.getElementById('padCardsSection');
+      const paintSection = document.getElementById('paintModeSection');
+      
+      btn.classList.toggle('active');
+      btn.textContent = isPaintMode ? '返回卡片模式' : '切换涂抹模式';
+      cardsSection.style.display = isPaintMode ? 'none' : 'block';
+      paintSection.style.display = isPaintMode ? 'block' : 'none';
+    }
+
+    // 卫生巾模板图片路径
+    const padTemplates = {
+      '日用': {
+        '短': 'templates/pad_daily_short.png',
+        '中': 'templates/pad_daily_medium.png',
+        '长': 'templates/pad_daily_long.png'
+      },
+      '夜用': {
+        '短': 'templates/pad_night_short.png',
+        '中': 'templates/pad_night_medium.png',
+        '长': 'templates/pad_night_long.png'
+      },
+      '安心裤': {
+        '短': 'templates/pants_short.png',
+        '中': 'templates/pants_medium.png',
+        '长': 'templates/pants_long.png'
+      },
+      '护垫': {
+        '短': 'templates/liner_short.png',
+        '中': 'templates/liner_medium.png',
+        '长': 'templates/liner_long.png'
+      }
+    };
+
+    // 存储模板的非透明像素信息
+    const templatePixels = {};
+
+    // 加载模板图片并计算非透明像素
+    async function loadTemplateImage(type, length) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const tempCanvas = document.createElement('canvas');
+          const canvasWidth = 200; // Target canvas width
+          const canvasHeight = 300; // Target canvas height
+          
+          // Calculate scaling factor to fit image within canvas
+          const scaleX = canvasWidth / img.width;
+          const scaleY = canvasHeight / img.height;
+          const scale = Math.min(scaleX, scaleY, 1); // Don't scale up
+          
+          const scaledWidth = img.width * scale;
+          const scaledHeight = img.height * scale;
+          const offsetX = (canvasWidth - scaledWidth) / 2;
+          const offsetY = (canvasHeight - scaledHeight) / 2;
+          
+          tempCanvas.width = scaledWidth;
+          tempCanvas.height = scaledHeight;
+          const ctx = tempCanvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+          
+          const imageData = ctx.getImageData(0, 0, scaledWidth, scaledHeight);
+          const pixels = imageData.data;
+          const nonTransparentPixels = new Set();
+          
+          for (let i = 0; i < pixels.length; i += 4) {
+            if (pixels[i + 3] > 0) { // alpha channel > 0
+              const x = Math.round((i / 4) % scaledWidth);
+              const y = Math.round(Math.floor((i / 4) / scaledWidth));
+              nonTransparentPixels.add(`${x},${y}`);
+            }
+          }
+          
+          if (!templatePixels[type]) {
+            templatePixels[type] = {};
+          }
+          templatePixels[type][length] = {
+            image: img, // Keep original image for reference if needed
+            nonTransparentPixels: nonTransparentPixels,
+            totalNonTransparent: nonTransparentPixels.size,
+            scaledWidth: scaledWidth,
+            scaledHeight: scaledHeight,
+            offsetX: offsetX,
+            offsetY: offsetY,
+            scale: scale
+          };
+          
+          resolve(templatePixels[type][length]); // Resolve with the processed template data
+        };
+        img.onerror = reject;
+        img.src = padTemplates[type][length];
+      });
+    }
+
+    async function addNewPad(type) {
+      try {
+        // Check if template exists, load if not (only need default length initially)
+        const initialLength = '中';
+        if (!templatePixels[type]?.[initialLength]) {
+          await loadTemplateImage(type, initialLength);
+        }
+        
+        const container = document.createElement('div');
+        container.className = 'pad-canvas-container';
+        container.id = `pad-container-${currentPadId}`;
+        container.dataset.padId = currentPadId; // Add padId for easier access
+        container.dataset.type = type; // Store type
+        container.dataset.saved = 'false'; // Mark as not manually saved initially
+        
+        const canvas = document.createElement('canvas');
+        canvas.className = 'pad-canvas';
+        canvas.width = 200;
+        canvas.height = 300;
+        canvas.id = `pad-${currentPadId}`;
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.onclick = () => {
+             // If manually saved, remove its data entry as well
+            if (container.dataset.saved === 'true') {
+                const padIndex = data[currentDay - 1].pads.findIndex(p => p.padId === container.dataset.padId);
+                if (padIndex > -1) {
+                    data[currentDay - 1].pads.splice(padIndex, 1);
+                    updateUsed('pad');
+                }
+            }
+            container.remove();
+        };
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'save-btn';
+        saveBtn.textContent = '保存';
+        // Link save button directly to the specific container/padId
+        saveBtn.onclick = () => savePadData(container.dataset.padId);
+        
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'pad-info';
+        
+        const typeSpan = document.createElement('span');
+        typeSpan.textContent = type;
+        
+        const lengthSelect = document.createElement('select');
+        lengthSelect.id = `pad-length-${currentPadId}`;
+        ['短', '中', '长'].forEach(length => {
+          const option = document.createElement('option');
+          option.value = length;
+          option.textContent = `${length}`;
+          if (length === initialLength) option.selected = true;
+          lengthSelect.appendChild(option);
+        });
+        
+        lengthSelect.onchange = async () => {
+          const selectedLength = lengthSelect.value;
+          // Only load if not already loaded
+          if (!templatePixels[type]?.[selectedLength]) {
+            await loadTemplateImage(type, selectedLength);
+          }
+          // Redraw with new template, potentially clearing previous drawing
+          drawTemplate(canvas, type, selectedLength);
+          // Reset saved status if length changes after save
+          container.dataset.saved = 'false'; 
+          const volumeDisplay = container.querySelector('.saved-volume');
+          if (volumeDisplay) volumeDisplay.remove();
+        };
+
+        // Placeholder for displaying saved volume
+        const volumeDisplaySpan = document.createElement('span');
+        volumeDisplaySpan.className = 'saved-volume';
+        volumeDisplaySpan.style.marginLeft = 'auto'; // Push to the right
+        
+        infoDiv.appendChild(typeSpan);
+        infoDiv.appendChild(lengthSelect);
+        infoDiv.appendChild(volumeDisplaySpan); // Add span to info div
+        
+        container.appendChild(canvas);
+        container.appendChild(deleteBtn);
+        container.appendChild(saveBtn);
+        container.appendChild(infoDiv);
+        
+        document.getElementById('padsContainer').appendChild(container);
+        
+        drawTemplate(canvas, type, initialLength);
+        setupPadCanvas(canvas);
+        currentPadId++;
+      } catch (error) {
+        console.error('Error adding new pad:', error);
+        alert('加载卫生巾模板失败，请检查模板图片是否存在。');
+      }
+    }
+
+    function drawTemplate(canvas, type, length) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff'; 
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      const template = templatePixels[type]?.[length];
+      if (template) {
+        // Draw the scaled template centered
+        ctx.drawImage(template.image, 
+                      template.offsetX, template.offsetY, 
+                      template.scaledWidth, template.scaledHeight);
+      }
+    }
+
+    // Removed 'type' parameter as it's now stored in container dataset
+    function setupPadCanvas(canvas) { 
+      let isDrawing = false;
+      let lastX = 0;
+      let lastY = 0;
+      const container = canvas.closest('.pad-canvas-container'); // Get parent container
+      
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseout', stopDrawing);
+      
+      canvas.addEventListener('touchstart', handleTouch);
+      canvas.addEventListener('touchmove', handleTouch);
+      canvas.addEventListener('touchend', stopDrawing);
+      
+      function startDrawing(e) {
+        // Reset saved status if user starts drawing again after saving
+        if (container.dataset.saved === 'true') {
+            container.dataset.saved = 'false';
+            const volumeDisplay = container.querySelector('.saved-volume');
+             if (volumeDisplay) volumeDisplay.textContent = ''; // Clear displayed volume
+             // Remove potentially existing data entry
+             const padIndex = data[currentDay - 1].pads.findIndex(p => p.padId === container.dataset.padId);
+             if (padIndex > -1) {
+                 data[currentDay - 1].pads.splice(padIndex, 1);
+                 updateUsed('pad');
+             }
+        }
+        isDrawing = true;
+        [lastX, lastY] = getCoordinates(e);
+      }
+      
+      function draw(e) {
+        if (!isDrawing) return;
+        
+        const ctx = canvas.getContext('2d');
+        const [currentX, currentY] = getCoordinates(e);
+        
+        const padId = container.dataset.padId;
+        const type = container.dataset.type;
+        const lengthSelect = document.getElementById(`pad-length-${padId}`);
+        const selectedLength = lengthSelect.value;
+        const template = templatePixels[type]?.[selectedLength];
+        
+        if (template) {
+          // Map canvas coordinates to scaled template coordinates
+          const templateX = Math.round(currentX - template.offsetX);
+          const templateY = Math.round(currentY - template.offsetY);
+          
+          // Check if the point is within the non-transparent area of the scaled template
+          if (template.nonTransparentPixels.has(`${templateX},${templateY}`)) {
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.strokeStyle = document.getElementById('paintColor').value;
+            ctx.lineWidth = document.getElementById('brushSize').value;
+            ctx.lineCap = 'round';
+            // Use 'source-over' to draw normally, template is redrawn if length changes
+            ctx.globalCompositeOperation = 'source-over'; 
+            ctx.stroke();
+          }
+        }
+        
+        [lastX, lastY] = [currentX, currentY];
+      }
+      
+      function stopDrawing() {
+        isDrawing = false;
+      }
+      
+      function getCoordinates(e) {
+        const rect = canvas.getBoundingClientRect();
+        if (e.type.includes('touch')) {
+          return [
+            e.touches[0].clientX - rect.left,
+            e.touches[0].clientY - rect.top
+          ];
+        }
+        return [
+          e.clientX - rect.left,
+          e.clientY - rect.top
+        ];
+      }
+      
+      function handleTouch(e) {
+        e.preventDefault();
+        const touch = e.type === 'touchstart' ? startDrawing : draw;
+        touch(e);
+      }
+    }
+
+    // Renamed function for clarity and added parameter
+    function calculatePadVolume(padId) {
+      const container = document.getElementById(`pad-container-${padId}`);
+      if (!container) return null;
+
+      const canvas = document.getElementById(`pad-${padId}`);
+      const type = container.dataset.type;
+      const lengthSelect = document.getElementById(`pad-length-${padId}`);
+      const selectedLength = lengthSelect.value;
+      const ctx = canvas.getContext('2d');
+      const template = templatePixels[type]?.[selectedLength];
+
+      if (!template || template.totalNonTransparent === 0) {
+        console.error('Template or non-transparent pixels not found or zero for', type, selectedLength);
+        return { volume: 0, level: '未知', coverage: 0 }; // Return zero volume if template is invalid
+      }
+
+      const imageData = ctx.getImageData(template.offsetX, template.offsetY, 
+                                         template.scaledWidth, template.scaledHeight);
+      const pixels = imageData.data;
+      
+      let redPixels = 0;
+      // Iterate only over the template's non-transparent pixels for efficiency
+      template.nonTransparentPixels.forEach(coord => {
+          const [px, py] = coord.split(',').map(Number);
+          const index = (py * Math.round(template.scaledWidth) + px) * 4;
+          if (pixels[index] > 200 && pixels[index + 1] < 100 && pixels[index + 2] < 100) { // Check if red
+              redPixels++;
+          }
+      });
+
+      const coverage = redPixels / template.totalNonTransparent;
+      const maxCapacity = padVolumes[type][selectedLength].maxCapacity;
+      const volume = coverage * maxCapacity;
+      
+      let level;
+      if (coverage < 0.01) { // Handle near zero coverage
+        level = '未染色';
+      } else if (coverage < 0.2) {
+        level = '染了一点';
+      } else if (coverage < 0.5) {
+        level = '染了一半';
+      } else {
+        level = '全染红';
+      }
+      
+      return { volume, level, coverage };
+    }
+
+    // Manual save function
+    function savePadData(padId) {
+        const container = document.getElementById(`pad-container-${padId}`);
+        if (!container || container.dataset.saved === 'true') return; // Don't re-save
+
+        const calculation = calculatePadVolume(padId);
+        if (!calculation) return; // Calculation failed
+        
+        const { volume, level } = calculation;
+        const type = container.dataset.type;
+        const selectedLength = document.getElementById(`pad-length-${padId}`).value;
+
+        // Display volume
+        const volumeDisplay = container.querySelector('.saved-volume');
+        if (volumeDisplay) {
+            volumeDisplay.textContent = `血量: ${volume.toFixed(2)}ml`;
+        }
+
+        // Remove previous entry if exists (e.g., saved, then edited)
+        const existingIndex = data[currentDay - 1].pads.findIndex(p => p.padId === padId);
+        if (existingIndex > -1) {
+            data[currentDay - 1].pads.splice(existingIndex, 1);
+        }
+
+        // Add data
+        data[currentDay - 1].pads.push({
+            type: type,
+            length: selectedLength,
+            level: level, // Use calculated level
+            volume: volume,
+            isPainted: true, // Mark as painted
+            padId: padId // Store ID to link data entry to canvas if needed
+        });
+
+        container.dataset.saved = 'true'; // Mark as manually saved
+        updateUsed('pad'); // Update the list of used pads
+    }
+
+    // Automatic processing function
+    function processVisiblePads() {
+        const padsContainer = document.getElementById('padsContainer');
+        if (!padsContainer) return;
+
+        const padElements = padsContainer.querySelectorAll('.pad-canvas-container');
+        padElements.forEach(container => {
+            // Only process pads that haven't been manually saved
+            if (container.dataset.saved === 'false') {
+                const padId = container.dataset.padId;
+                const calculation = calculatePadVolume(padId);
+                
+                if (calculation && calculation.volume > 0) { // Only save if there is some volume
+                    const { volume, level } = calculation;
+                    const type = container.dataset.type;
+                    const selectedLength = document.getElementById(`pad-length-${padId}`).value;
+                    
+                    data[currentDay - 1].pads.push({
+                        type: type,
+                        length: selectedLength,
+                        level: level,
+                        volume: volume,
+                        isPainted: true,
+                        padId: padId
+                    });
+                }
+            }
+            // Remove the canvas container after processing (or if manually saved)
+            container.remove(); 
+        });
+        // Update the list after processing all
+        if (padElements.length > 0) {
+             updateUsed('pad');
+        }
+        // Clear the container explicitly
+        padsContainer.innerHTML = ''; 
+    }
+
+    function showResult() {
+      processVisiblePads();
+      document.getElementById('tracker').classList.remove('active');
+      document.getElementById('result').classList.add('active');
+      
+      // 显示当前日期
+      const dateDisplay = document.querySelector('.date-display');
+      dateDisplay.textContent = formatDate(new Date());
+      
+      let total = 0;
+      const table = document.getElementById('resultTable');
+      table.innerHTML = '';
+      
+      // 准备图表数据
+      const dailyVolumes = [];
+      const dayLabels = [];
+      
+      data.forEach((day, i) => {
+        const dayItems = [...day.pads, ...day.tampons, ...day.cups, ...day.clots];
+        const dayTotal = dayItems.reduce((sum, item) => sum + item.volume, 0);
+        total += dayTotal;
+        dailyVolumes.push(dayTotal);
+        dayLabels.push(`第${i + 1}天`);
+        
+        const details = dayItems.map(item => {
+          if (item.type && item.length) return `${item.type} ${item.length} ${item.level} (${item.volume.toFixed(2)}ml)`;
+          if (item.type && item.absorbency) return `${item.type} ${item.absorbency} ${item.level} (${item.volume.toFixed(2)}ml)`;
+          return `${item.label} (${item.volume.toFixed(2)}ml)`;
+        }).join(', ');
+        table.innerHTML += `<tr><td>第 ${i + 1} 天</td><td>${dayItems.length} 项</td><td>${dayTotal.toFixed(2)} ml</td><td>${details}</td></tr>`;
+      });
+      
+      document.getElementById('totalVolume').innerText = total.toFixed(2);
+      
+      // 计算概率和建议
+      let probability = 0;
+      let suggestion = '';
+      
+      if (total <= 25) {
+        probability = 5;
+        suggestion = "您可能月经较少";
+      } else if (total <= 50) {
+        probability = 15;
+        suggestion = "您的月经量处于正常范围";
+      } else if (total <= 75) {
+        probability = 35;
+        suggestion = "您的月经量尚处于正常范围";
+      } else if (total <= 90) {
+        probability = 65;
+        suggestion = "您的月经量稍多，但处于正常范围";
+      } else if (total <= 100) {
+        probability = 85;
+        suggestion = "您的月经量稍多";
+      } else if (total <= 110) {
+        probability = 90;
+        suggestion = "您可能有月经过多";
+      } else if (total <= 125) {
+        probability = 95;
+        suggestion = "您非常可能有月经过多";
+      } else if (total <= 150) {
+        probability = 98;
+        suggestion = "建议您及时就医";
+      } else {
+        probability = 99;
+        suggestion = "建议您及时就医，排查相关疾病";
+      }
+      
+      document.getElementById('probability').innerText = probability;
+      document.getElementById('suggestion').innerText = suggestion;
+      
+      // 创建柱状图
+      new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+          labels: dayLabels,
+          datasets: [{
+            label: '每日出血量占比',
+            data: dailyVolumes,
+            backgroundColor: 'rgba(255, 99, 132, 0.7)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: window.innerWidth <= 768 ? 1.2 : 2,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.raw;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `占比: ${percentage}% (${value.toFixed(2)}ml)`;
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: '每日出血量分布',
+              font: {
+                size: window.innerWidth <= 768 ? 14 : 16
+              }
+            },
+            legend: {
+              labels: {
+                font: {
+                  size: window.innerWidth <= 768 ? 12 : 14
+                }
+              }
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'top',
+              formatter: (value, ctx) => {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${value.toFixed(2)}ml\n(${percentage}%)`;
+              },
+              font: {
+                size: window.innerWidth <= 768 ? 11 : 12,
+                weight: 'bold'
+              },
+              color: '#666'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '出血量 (ml)',
+                font: {
+                  size: window.innerWidth <= 768 ? 12 : 14
+                }
+              },
+              ticks: {
+                font: {
+                  size: window.innerWidth <= 768 ? 11 : 12
+                }
+              },
+              suggestedMax: Math.max(...dailyVolumes) * 1.1
+            },
+            x: {
+              ticks: {
+                font: {
+                  size: window.innerWidth <= 768 ? 11 : 12
+                }
+              }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+      
+      // 创建饼图
+      new Chart(document.getElementById('pieChart'), {
+        type: 'pie',
+        data: {
+          labels: dayLabels,
+          datasets: [{
+            data: dailyVolumes,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.7)',
+              'rgba(54, 162, 235, 0.7)',
+              'rgba(255, 206, 86, 0.7)',
+              'rgba(75, 192, 192, 0.7)',
+              'rgba(153, 102, 255, 0.7)',
+              'rgba(255, 159, 64, 0.7)',
+              'rgba(199, 199, 199, 0.7)',
+              'rgba(83, 102, 255, 0.7)',
+              'rgba(40, 159, 64, 0.7)',
+              'rgba(210, 199, 199, 0.7)'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: window.innerWidth <= 768 ? 1 : 1,
+          plugins: {
+            title: {
+              display: true,
+              text: '出血量占比分布',
+              font: {
+                size: window.innerWidth <= 768 ? 14 : 16
+              }
+            },
+            legend: {
+              position: window.innerWidth <= 768 ? 'bottom' : 'right',
+              align: 'center',
+              labels: {
+                boxWidth: window.innerWidth <= 768 ? 15 : 40,
+                padding: window.innerWidth <= 768 ? 8 : 10,
+                font: {
+                  size: window.innerWidth <= 768 ? 11 : 12
+                }
+              }
+            },
+            datalabels: {
+              formatter: (value, ctx) => {
+                const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = ((value / sum) * 100).toFixed(1);
+                // 当比例为0时返回空字符串，这样就不会显示标签
+                return percentage === '0.0' ? '' : `${percentage}%\n(${value.toFixed(2)}ml)`;
+              },
+              color: '#fff',
+              font: {
+                size: window.innerWidth <= 768 ? 11 : 13,
+                weight: 'bold'
+              },
+              textAlign: 'center',
+              textStroke: {
+                color: 'rgba(0, 0, 0, 0.5)',
+                width: 2
+              }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+  </script>
+</body>
+</html>

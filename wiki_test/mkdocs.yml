@@ -1,0 +1,149 @@
+site_name: 女性健康知识百科
+site_description: 专业的女性健康知识分享平台
+site_url: https://nellurkia.github.io/women-health-wiki/
+repo_url: https://github.com/Nellurkia/women-health-wiki
+repo_name: Nellurkia/women-health-wiki
+
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+    - search.share
+    - search.suggest
+
+
+
+nav:
+  - 首页: index.md
+
+  - 基础知识:
+    - 月经基础知识: basic/menstrual-basic.md
+    - 月经是什么: basic/yes-s.md
+    - 月经不是什么: basic/no-s.md
+
+  - 月经异常出血:
+    - 按流量划分:
+      - 月经量过多: aub/hmb.md
+      - 月经量过少: aub/scanty-menstruation.md
+    - 按时间划分:
+      - 月经频发: aub/frequent-menstruation.md
+      - 月经稀发: aub/oligomenorrhea.md
+      - 月经不规则: aub/irregular-menstruation.md
+      - 周期延长或缩短: aub/cycle-length-changes.md
+      - 经期延长或缩短: aub/period-duration-changes.md
+      - 闭经: aub/amenorrhea.md
+    - 按年龄划分:
+      - 青春期: aub/adolescent-menstrual-disorders.md
+      - 育龄期: aub/reproductive-age-disorders.md
+      - 围绝经期: aub/perimenopausal-disorders.md
+
+  - 月经相关疾病:
+    - 子宫内膜相关疾病:
+      - 子宫内膜异位症: physiology/endometriosis.md
+      - 子宫内膜息肉: physiology/endometrial-polyps.md
+      - 子宫内膜炎: physiology/endometritis.md
+      - 子宫内膜增生: physiology/endometrial-hyperplasia.md
+      - 子宫腺肌症: physiology/adenomyosis.md
+      - 子宫肌瘤: physiology/uterine-fibroids.md
+    - 排卵障碍:
+      - 多囊卵巢综合征: physiology/pcos.md
+      - 青春期排卵障碍: physiology/adolescent-ovulation-disorder.md
+      - 卵巢早衰: physiology/premature-ovarian-failure.md
+      - 围绝经期综合征: physiology/perimenopausal-syndrome.md
+      - 功能失调性子宫出血: physiology/dysfunctional-uterine-bleeding.md
+    - 激素紊乱:
+      - 甲状腺异常: physiology/thyroid-disorders.md
+      - 泌乳素异常: physiology/prolactin-disorders.md
+      - 垂体异常: physiology/pituitary-disorders.md
+      - 原发性下丘脑闭经: physiology/primary-hypothalamic-amenorrhea.md
+    - 出血性疾病:
+      - 血友病: physiology/hemophilia.md
+      - 血管性血友病: physiology/von-willebrand-disease.md
+      - 血小板相关疾病: physiology/platelet-disorders.md
+      - 罕见凝血因子缺乏: physiology/rare-coagulation-factor-deficiency.md
+      - 弥散性血管内凝血: physiology/disseminated-intravascular-coagulation.md
+      - 重度肝脏疾病: physiology/severe-liver-disease.md
+      - 形成循环性抗凝物质: physiology/circulating-anticoagulants.md
+    - 炎症相关:
+      - 盆腔炎: physiology/pelvic-inflammatory-disease.md
+      - 子宫内膜炎: physiology/endometritis.md
+      - 宫颈炎: physiology/cervicitis.md
+      - HPV感染: physiology/hpv-infection.md
+      - 宫颈息肉: physiology/cervical-polyps.md
+      - 阴道炎: physiology/vaginitis.md
+      - 尿道炎: physiology/urethritis.md
+      - 尿道感染: physiology/urinary-tract-infection.md
+    - 子宫疾病:
+      - 子宫粘连: physiology/uterine-adhesions.md
+      - 子宫脱垂: physiology/uterine-prolapse.md
+      - 纵隔子宫: physiology/septate-uterus.md
+    - 卵巢:
+      - 卵巢囊肿（破裂）: physiology/ovarian-cysts.md
+      - 黄体囊肿（破裂）: physiology/corpus-luteum-cysts.md
+      - 卵巢发育不良: physiology/ovarian-dysgenesis.md
+    - 输卵管:
+      - 输卵管炎: physiology/salpingitis.md
+      - 输卵管积液: physiology/hydrosalpinx.md
+      - 输卵管囊肿: physiology/fallopian-tube-cysts.md
+
+  - 其他出血:
+    - 妊娠相关出血:
+      - 子宫异位妊娠: otherbleed/ectopic-pregnancy.md
+      - 产程大出血: otherbleed/labor-hemorrhage.md
+      - 产后出血，产经: otherbleed/postpartum-bleeding.md
+      - 早期流产、流产后出血: otherbleed/early-miscarriage-bleeding.md
+      - 习惯性流产: otherbleed/recurrent-miscarriage.md
+      - 瘢痕子宫: otherbleed/scarred-uterus.md
+    - 宫内节育器相关出血: otherbleed/iud-bleeding.md
+    - 非经期出血:
+      - 排卵期出血（经间出血）: otherbleed/ovulatory-bleeding.md
+    - 闭经相关出血: otherbleed/amenorrhea-bleeding.md
+    - 药物导致的异常出血:
+      - 紧急避孕药: otherbleed/emergency-contraception-bleeding.md
+      - 短效避孕药: otherbleed/oral-contraception-bleeding.md
+    - 盆腔粘连: otherbleed/pelvic-adhesions.md
+    - 子宫肥大: otherbleed/uterine-hypertrophy.md
+    - 癌症:
+      - 子宫内膜癌: otherbleed/endometrial-cancer.md
+      - 卵巢癌: otherbleed/ovarian-cancer.md
+      - 宫颈癌: otherbleed/cervical-cancer.md
+      - 外阴癌: otherbleed/vulvar-cancer.md
+      - 绒毛膜癌: otherbleed/choriocarcinoma.md
+      - 阴道癌: otherbleed/vaginal-cancer.md
+    - 性传播疾病:
+      - 梅毒: otherbleed/syphilis.md
+      - 艾滋病: otherbleed/hiv-aids.md
+      - 淋病: otherbleed/gonorrhea.md
+      - 沙眼衣原体: otherbleed/chlamydia.md
+      - 软下疳: otherbleed/chancroid.md
+      - 尖锐湿疣: otherbleed/genital-warts.md
+      - 性病性淋巴肉芽肿: otherbleed/lymphogranuloma-venereum.md
+      - 生殖器疱疹: otherbleed/genital-herpes.md
+  
+  - 常见症状:
+    - 痛经: symptom/period-pain.md
+    - 经前期综合征: symptom/pms.md
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.arithmatex
+  - pymdownx.tabbed
+  - pymdownx.emoji
+  - admonition
+  - footnotes
+  - admonition
+  - toc:
+      permalink: true
+  - attr_list
+  - def_list
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+

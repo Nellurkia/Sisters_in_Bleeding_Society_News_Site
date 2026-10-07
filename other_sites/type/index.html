@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>样本标签生成工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>样本标签生成工具</h1>
+        <h2>仅血友姐妹会内部使用，且不储存任何信息</h2>
+        
+        <form id="labelForm">
+            <div class="form-group">
+                <label for="location">地点缩写:</label>
+                <input type="text" id="location" placeholder="例如: NC" required>
+            </div>
+
+            <div class="form-group">
+                <label for="startNum">人员序号 - 起始:</label>
+                <input type="number" id="startNum" placeholder="例如: 1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="endNum">人员序号 - 结束:</label>
+                <input type="number" id="endNum" placeholder="例如: 10" required>
+            </div>
+
+            <div class="form-group">
+                <label for="names">姓名列表 (每行一个):</label>
+                <textarea id="names" placeholder="张三&#10;李四&#10;王五" rows="5" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="sampleTime">采样时间:</label>
+                <input type="datetime-local" id="sampleTime" required>
+            </div>
+
+            <div class="form-group">
+                <label for="packTime">分装时间:</label>
+                <input type="datetime-local" id="packTime" required>
+            </div>
+
+            <div class="sample-types">
+                <h3>样本类型及数量</h3>
+                
+                <div class="form-group">
+                    <label for="wholeBlood">全血管数:</label>
+                    <input type="number" id="wholeBlood" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="bloodCells">血细胞管数:</label>
+                    <input type="number" id="bloodCells" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="plasma">血浆管数:</label>
+                    <input type="number" id="plasma" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="serum">血清管数:</label>
+                    <input type="number" id="serum" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="other">其它管数:</label>
+                    <input type="number" id="other" min="0" value="0">
+                </div>
+
+                <div class="custom-samples-section">
+                    <button type="button" id="addCustomSample" class="add-btn">添加其它样本类型</button>
+                    <div id="customSamples"></div>
+                </div>
+            </div>
+
+            <button type="submit">生成Excel文件</button>
+        </form>
+
+        <div id="preview" class="preview-section" style="display: none;">
+            <h3>预览 (前10条):</h3>
+            <div id="previewContent"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

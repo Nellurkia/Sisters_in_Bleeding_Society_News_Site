@@ -1,0 +1,154 @@
+项目目录结构
+================
+
+根目录 (.)
+├── docs/
+│   ├── aub/
+│   │   ├── adolescent-menstrual-disorders_QA.md
+│   │   ├── adolescent-menstrual-disorders.md
+│   │   ├── hmb_1.png
+│   │   ├── hmb_QA.md
+│   │   ├── hmb.md
+│   │   ├── reproductive-age-disorders_QA.md
+│   │   ├── reproductive-age-disorders.md
+│   │   ├── scanty-menstruation_QA.md
+│   │   └── scanty-menstruation.md
+│   ├── basic/
+│   │   ├── menstrual-basic_1.png
+│   │   ├── menstrual-basic.md
+│   │   ├── no-s.md
+│   │   └── yes-s.md
+│   ├── otherbleed/
+│   │   ├── ectopic-pregnancy_1.png
+│   │   ├── ectopic-pregnancy_2.png
+│   │   ├── ectopic-pregnancy_QA.md
+│   │   └── ectopic-pregnancy.md
+│   ├── physiology/
+│   │   ├── adenomyosis_QA.md
+│   │   ├── adenomyosis.md
+│   │   ├── adenomyosis.png
+│   │   ├── adolescent-ovulation-disorder_QA.md
+│   │   ├── adolescent-ovulation-disorder.md
+│   │   ├── corpus-luteum-cysts_QA.md
+│   │   ├── corpus-luteum-cysts.md
+│   │   ├── dysfunctional-uterine-bleeding_QA.md
+│   │   ├── dysfunctional-uterine-bleeding.md
+│   │   ├── endometrial-polyps_QA.md
+│   │   ├── endometrial-polyps.md
+│   │   ├── endometriosis_1.png
+│   │   ├── endometriosis_QA.md
+│   │   ├── endometriosis.md
+│   │   ├── hpv-infection.md
+│   │   ├── pcos.md
+│   │   ├── uterine-fibroids_1.png
+│   │   ├── uterine-fibroids_2.png
+│   │   ├── uterine-fibroids_QA.md
+│   │   └── uterine-fibroids.md
+│   ├── symptom/
+│   │   ├── period-pain_QA.md
+│   │   └── period-pain.md
+│   ├── how-to-participate.md
+│   └── index.md
+├── site/
+│   ├── assets/
+│   │   ├── images/
+│   │   │   └── favicon.png
+│   │   ├── javascripts/
+│   │   │   ├── lunr/
+│   │   │   │   ├── min/
+│   │   │   │   ├── tinyseg.js
+│   │   │   │   └── wordcut.js
+│   │   │   ├── workers/
+│   │   │   │   ├── search.d50fe291.min.js
+│   │   │   │   └── search.d50fe291.min.js.map
+│   │   │   ├── bundle.13a4f30d.min.js
+│   │   │   └── bundle.13a4f30d.min.js.map
+│   │   └── stylesheets/
+│   │       ├── main.342714a4.min.css
+│   │       ├── main.342714a4.min.css.map
+│   │       ├── palette.06af60db.min.css
+│   │       └── palette.06af60db.min.css.map
+│   ├── aub/
+│   │   ├── adolescent-menstrual-disorders/
+│   │   │   └── index.html
+│   │   ├── adolescent-menstrual-disorders_QA/
+│   │   │   └── index.html
+│   │   ├── hmb/
+│   │   │   └── index.html
+│   │   ├── hmb_QA/
+│   │   │   └── index.html
+│   │   ├── reproductive-age-disorders/
+│   │   │   └── index.html
+│   │   ├── reproductive-age-disorders_QA/
+│   │   │   └── index.html
+│   │   ├── scanty-menstruation/
+│   │   │   └── index.html
+│   │   ├── scanty-menstruation_QA/
+│   │   │   └── index.html
+│   │   └── hmb_1.png
+│   ├── basic/
+│   │   ├── menstrual-basic/
+│   │   │   └── index.html
+│   │   ├── no-s/
+│   │   │   └── index.html
+│   │   ├── yes-s/
+│   │   │   └── index.html
+│   │   └── menstrual-basic_1.png
+│   ├── how-to-participate/
+│   │   └── index.html
+│   ├── otherbleed/
+│   │   ├── ectopic-pregnancy/
+│   │   │   └── index.html
+│   │   ├── ectopic-pregnancy_QA/
+│   │   │   └── index.html
+│   │   ├── ectopic-pregnancy_1.png
+│   │   └── ectopic-pregnancy_2.png
+│   ├── physiology/
+│   │   ├── adenomyosis/
+│   │   │   └── index.html
+│   │   ├── adenomyosis_QA/
+│   │   │   └── index.html
+│   │   ├── adolescent-ovulation-disorder/
+│   │   │   └── index.html
+│   │   ├── adolescent-ovulation-disorder_QA/
+│   │   │   └── index.html
+│   │   ├── corpus-luteum-cysts/
+│   │   │   └── index.html
+│   │   ├── corpus-luteum-cysts_QA/
+│   │   │   └── index.html
+│   │   ├── dysfunctional-uterine-bleeding/
+│   │   │   └── index.html
+│   │   ├── dysfunctional-uterine-bleeding_QA/
+│   │   │   └── index.html
+│   │   ├── endometrial-polyps/
+│   │   │   └── index.html
+│   │   ├── endometrial-polyps_QA/
+│   │   │   └── index.html
+│   │   ├── endometriosis/
+│   │   │   └── index.html
+│   │   ├── endometriosis_QA/
+│   │   │   └── index.html
+│   │   ├── hpv-infection/
+│   │   │   └── index.html
+│   │   ├── pcos/
+│   │   │   └── index.html
+│   │   ├── uterine-fibroids/
+│   │   │   └── index.html
+│   │   ├── uterine-fibroids_QA/
+│   │   │   └── index.html
+│   │   ├── adenomyosis.png
+│   │   ├── endometriosis_1.png
+│   │   ├── uterine-fibroids_1.png
+│   │   └── uterine-fibroids_2.png
+│   ├── search/
+│   │   └── search_index.json
+│   ├── symptom/
+│   │   ├── period-pain/
+│   │   │   └── index.html
+│   │   └── period-pain_QA/
+│   │       └── index.html
+│   ├── 404.html
+│   ├── index.html
+│   ├── sitemap.xml
+│   └── sitemap.xml.gz
+└── mkdocs.yml
